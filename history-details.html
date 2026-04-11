@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>ATD Gachibowli – History Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            text-align: center;
+            padding-bottom: 60px;
+        }
+
+        /* ── Top bar ── */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 18px 50px 4px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 14px;
+            font-size: 22px;
+            background: none;
+            border: none;
+            color: teal;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .page-title {
+            font-size: 22px;
+            color: teal;
+            font-weight: 600;
+        }
+
+        /* ── Session header ── */
+        .session-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111;
+            margin-top: 10px;
+            padding: 0 12px;
+        }
+
+        .session-date {
+            font-size: 14px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        /* ── Cards grid ── */
+        .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 18px;
+            padding: 0 8px;
+        }
+
+        .card {
+            width: 40vw;
+            max-width: 150px;
+            height: 40vw;
+            min-height: 130px;
+            max-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 6px;
+            border-radius: 8px;
+            background: wheat;
+        }
+
+        /* Rotating colour palette */
+        .card:nth-child(7n+1) {
+            background-color: aliceblue;
+        }
+
+        .card:nth-child(7n+2) {
+            background-color: cadetblue;
+        }
+
+        .card:nth-child(7n+3) {
+            background-color: yellowgreen;
+        }
+
+        .card:nth-child(7n+4) {
+            background-color: violet;
+        }
+
+        .card:nth-child(7n+5) {
+            background-color: tomato;
+        }
+
+        .card:nth-child(7n+6) {
+            background-color: thistle;
+        }
+
+        .card:nth-child(7n) {
+            background-color: wheat;
+        }
+
+        .card.total {
+            background-color: #FFFDD0 !important;
+        }
+
+        .card-label {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: teal;
+        }
+
+        /* ── Buttons ── */
+        .btn-row {
+            margin-top: 24px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 22px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        /* ── States ── */
+        .loading-wrap {
+            margin-top: 80px;
+            font-size: 16px;
+            color: #777;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            border: 4px solid #ddd;
+            border-top-color: teal;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .no-data {
+            color: #999;
+            font-size: 15px;
+            margin-top: 16px;
+        }
+
+        .error-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px auto;
+            max-width: 480px;
+            font-size: 13px;
+            color: #856404;
+            text-align: left;
+            word-break: break-all;
+            display: none;
+        }
+
+        #mainContent {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <button class="back-btn" onclick="window.location.href='history.html'">&#8592;</button>
+        <div class="page-title">ATD Gachibowli-History Details</div>
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-wrap" id="loadingDiv">
+        <div class="spinner"></div><br>Loading...
+    </div>
+
+    <!-- Error box -->
+    <div class="error-box" id="errorBox"></div>
+
+    <!-- Main content — hidden until data loads -->
+    <div id="mainContent">
+
+        <div class="session-name" id="sessionName"></div>
+        <div class="session-date" id="sessionDate"></div>
+
+        <!-- Totals row -->
+        <div class="card-grid">
+            <div class="card total">
+                <div class="card-label">Counters</div>
+                <div class="card-value" id="stallTotal">0</div>
+            </div>
+            <div class="card total">
+                <div class="card-label">Total Count</div>
+                <div class="card-value" id="countTotal">0</div>
+            </div>
+        </div>
+
+        <!-- Per-counter cards — built from Data JSON -->
+        <div class="card-grid" id="counterCards"></div>
+
+        <!-- Action buttons -->
+        <div class="btn-row">
+            <button class="btn" onclick="copySummary()">&#9986;&#65039; Summary</button>
+            <button class="btn" onclick="whatsappSummary()">&#128228; WhatsApp</button>
+        </div>
+
+    </div>
+
+    <!-- config.js: contains API_KEY, BASE, HIST_TBL — never commit -->
+    <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        // ════════════════════════════════════════════════════════════════════
+        //  READS ONLY FROM HISTORY TABLE  (AIRTABLE_CONFIG.HIST_TBL)
+        //  No STALL_TBL, no secret-phrase input, no redirect to index.html
+        // ════════════════════════════════════════════════════════════════════
+
+        const API_KEY = AIRTABLE_CONFIG.API_KEY;
+        const BASE = AIRTABLE_CONFIG.BASE;
+        const HIST_TBL = AIRTABLE_CONFIG.HIST_TBL;   // tbls5yP5nGPMFa0ad
+
+        // Record ID passed in URL:  history_detail.html?history_record_id=recXXX
+        const historyRecordId =
+            new URLSearchParams(window.location.search).get('history_record_id');
+
+        // Page-level state
+        let dataJson = null;
+        let recordName = '';
+        let createdAt = '';
+
+        // ── Load single record from history table ──────────────────────────
+        async function loadData() {
+            const loadDiv = document.getElementById('loadingDiv');
+
+            if (!historyRecordId) {
+                loadDiv.innerHTML = '&#9888;&#65039; No record ID found in URL.';
+                return;
+            }
+
+            try {
+                const url = `https://api.airtable.com/v0/${BASE}/${HIST_TBL}/${historyRecordId}`;
+                const res = await fetch(url, {
+                    headers: { Authorization: 'Bearer ' + API_KEY }
+                });
+                const rec = await res.json();
+
+                if (rec.error) {
+                    loadDiv.textContent = 'Airtable error: ' + (rec.error.message || rec.error);
+                    showError(JSON.stringify(rec.error, null, 2));
+                    return;
+                }
+
+                // ── Pull fields ────────────────────────────────────────────
+                recordName = rec.fields['Name'] || '';
+                createdAt = rec.fields['Created Time'] || rec.createdTime || '';
+
+                // ── Parse Data JSON ────────────────────────────────────────
+                // Stored format:
+                // {
+                //   "stalls"  : [{"Name":"Evening","Count":8},{"Name":"Morning","Count":33}],
+                //   "totals"  : {"count_total":41,"stall_total":2},
+                //   "name"    : "11-04-2026"
+                // }
+                const raw = rec.fields['Data JSON'] || '{}';
+                try {
+                    dataJson = JSON.parse(raw);
+                } catch (_) {
+                    loadDiv.textContent = 'Error: Could not parse Data JSON.';
+                    showError('Raw value received:\n' + raw);
+                    return;
+                }
+
+                // Safety fallbacks
+                if (!dataJson.stalls) dataJson.stalls = [];
+                if (!dataJson.totals) {
+                    const total = dataJson.stalls.reduce((s, x) => s + (x.Count || 0), 0);
+                    dataJson.totals = { count_total: total, stall_total: dataJson.stalls.length };
+                }
+
+                render();
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loadingDiv').textContent =
+                    'Network error — check your connection.';
+                toastr.error('Unable to fetch history record.');
+            }
+        }
+
+        // ── Render all UI from dataJson ────────────────────────────────────
+        function render() {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+
+            // Header
+            document.getElementById('sessionName').textContent =
+                recordName || dataJson.name || '';
+            document.getElementById('sessionDate').textContent = createdAt
+                ? 'Saved at ' + new Date(createdAt).toLocaleString('en-IN')
+                : '';
+
+            // Totals
+            document.getElementById('stallTotal').textContent =
+                dataJson.totals.stall_total ?? 0;
+            document.getElementById('countTotal').textContent =
+                dataJson.totals.count_total ?? 0;
+
+            // Per-counter cards
+            const grid = document.getElementById('counterCards');
+            grid.innerHTML = '';
+
+            if (!dataJson.stalls.length) {
+                grid.innerHTML = '<div class="no-data">No counter data in this record.</div>';
+                return;
+            }
+
+            dataJson.stalls.forEach(stall => {
+                const name = stall.Name || stall.name || '—';
+                const count = stall.Count ?? stall.count ?? 0;
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML =
+                    '<div class="card-label">' + esc(name) + '</div>' +
+                    '<div class="card-value">' + count + '</div>';
+                grid.appendChild(card);
+            });
+        }
+
+        // ── Helpers ────────────────────────────────────────────────────────
+        function esc(t) {
+            return String(t)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function showError(msg) {
+            const box = document.getElementById('errorBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+        }
+
+        // ── Summary ────────────────────────────────────────────────────────
+        function generateSummary() {
+            if (!dataJson) return '';
+            const t = dataJson.totals;
+            const label = recordName || dataJson.name || '';
+            const when = createdAt
+                ? new Date(createdAt).toLocaleString('en-IN')
+                : label;
+
+            return [
+                'Hare Krishna',
+                'Date of Darshan: ' + label,
+                'Generated at: ' + when,
+                '',
+                'Counters:    ' + (t.stall_total ?? 0),
+                'Total Count: ' + (t.count_total ?? 0),
+                '',
+                ...dataJson.stalls.map(s =>
+                    (s.Name || s.name) + ' - ' + (s.Count ?? s.count ?? 0)
+                )
+            ].join('\n');
+        }
+
+        function copySummary() {
+            navigator.clipboard.writeText(generateSummary());
+            toastr.success('Summary copied!');
+        }
+
+        function whatsappSummary() {
+            window.open(
+                'https://api.whatsapp.com/send?text=' +
+                encodeURIComponent(generateSummary())
+            );
+        }
+
+        // ── Boot ───────────────────────────────────────────────────────────
+        loadData();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,4 @@
+# Secret config — never commit this!
+.config
+html/config.js
+config.js

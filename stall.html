@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prasadam Counter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* ---------- HEADER ---------- */
+        .page-title {
+            font-size: clamp(18px, 4vw, 24px);
+            color: teal;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        .stall-name {
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: clamp(18px, 5vw, 28px);
+            color: #222;
+            min-height: 32px;
+            padding: 0 10px;
+        }
+
+        /* ---------- COUNT ---------- */
+        .uicount-container {
+            font-size: clamp(28px, 8vw, 40px);
+            color: teal;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 12px 40px;
+            background-color: antiquewhite;
+            border-radius: 8px;
+            min-width: 140px;
+        }
+
+        /* ---------- BUTTONS ---------- */
+        .plus-button {
+            border-radius: 50%;
+            width: min(70vw, 350px);
+            height: min(70vw, 350px);
+            font-size: clamp(60px, 15vw, 100px);
+            background-color: #94C973;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            color: white;
+            user-select: none;
+            transition: transform 0.1s, background-color 0.1s;
+        }
+
+        .plus-button:active {
+            transform: scale(0.95);
+            background-color: #7ab85d;
+        }
+
+        .minus-button {
+            margin-top: 12px;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            font-size: 32px;
+            background-color: #B8390E;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .minus-button:active {
+            transform: scale(0.9);
+        }
+
+        /* ---------- STATUS ---------- */
+        .sync-status {
+            font-size: 13px;
+            margin-top: 10px;
+            height: 20px;
+            color: #888;
+        }
+
+        .sync-status.syncing {
+            color: orange;
+        }
+
+        .sync-status.synced {
+            color: green;
+        }
+
+        .sync-status.error {
+            color: red;
+        }
+
+        /* ---------- BACK BUTTON ---------- */
+        .back-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            padding: 6px 10px;
+            cursor: pointer;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            color: teal;
+        }
+
+        /* ---------- RESET BANNER ---------- */
+        #resetBanner {
+            display: none;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ---------- TABLET ---------- */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .uicount-container {
+                padding: 15px 60px;
+            }
+
+            .minus-button {
+                width: 65px;
+                height: 65px;
+                font-size: 36px;
+            }
+        }
+
+        /* ---------- DESKTOP ---------- */
+        @media (min-width: 1024px) {
+            .plus-button {
+                width: 300px;
+                height: 300px;
+                font-size: 90px;
+            }
+
+            .uicount-container {
+                font-size: 42px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <button class="back-btn" onclick="history.back()">← Back</button>
+    <div class="page-title">ATD-Gachibowli</div>
+    <div id="resetBanner">📅 New day detected — all counts have been reset to 0.</div>
+    <div class="loading-wrap" id="loadingDiv">Loading...</div>
+
+    <div id="counterDiv" style="display:none; flex-direction:column; align-items:center; width:100%;">
+        <div class="stall-name" id="stallName"></div>
+        <div class="uicount-container" id="uiCount">0</div>
+        <button class="plus-button" onclick="addCount()">+</button>
+        <button class="minus-button" onclick="minusCount()">−</button>
+        <div class="sync-status" id="syncStatus"></div>
+    </div>
+
+    <!-- ⚠️ config.js is gitignored — contains your API credentials -->
+    <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        // ─── Config ───────────────────────────────────────────────────────────────────
+        const API_KEY = AIRTABLE_CONFIG.API_KEY;
+        const BASE = AIRTABLE_CONFIG.BASE;
+        const STALL_TBL = AIRTABLE_CONFIG.STALL_TBL;
+        const HIST_TBL = AIRTABLE_CONFIG.HIST_TBL;
+        const AUTH_HDR = { 'Authorization': `Bearer ${API_KEY}` };
+        const JSON_HDRS = { ...AUTH_HDR, 'Content-Type': 'application/json' };
+
+        // ─── Date helpers ─────────────────────────────────────────────────────────────
+        // Returns today's date as "DD-MM-YYYY" — used as the history record Name
+        function todayStr() {
+            const d = new Date();
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            return `${dd}-${mm}-${yyyy}`;
+        }
+
+        // ─── State ────────────────────────────────────────────────────────────────────
+        const stallRecordId = new URLSearchParams(window.location.search).get('stall_record_id');
+        let uiCount = 0;
+
+        const loadingDiv = document.getElementById('loadingDiv');
+        const counterDiv = document.getElementById('counterDiv');
+        const uiCountEl = document.getElementById('uiCount');
+        const stallNameEl = document.getElementById('stallName');
+        const syncEl = document.getElementById('syncStatus');
+
+        // ─── Airtable helpers ─────────────────────────────────────────────────────────
+        async function atGet(table, params = {}) {
+            const url = new URL(`https://api.airtable.com/v0/${BASE}/${table}`);
+            Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+            return (await fetch(url.toString(), { headers: AUTH_HDR })).json();
+        }
+        async function atPost(table, records) {
+            return (await fetch(`https://api.airtable.com/v0/${BASE}/${table}`, {
+                method: 'POST', headers: JSON_HDRS, body: JSON.stringify({ records })
+            })).json();
+        }
+        async function atPatch(table, records) {
+            return (await fetch(`https://api.airtable.com/v0/${BASE}/${table}`, {
+                method: 'PATCH', headers: JSON_HDRS, body: JSON.stringify({ records })
+            })).json();
+        }
+
+        // ─── Fetch ALL stalls (for history snapshot) ──────────────────────────────────
+        async function fetchAllStalls() {
+            const res = await atGet(STALL_TBL, {
+                'sort[0][field]': 'Name', 'sort[0][direction]': 'asc'
+            });
+            if (res.error) throw res.error;
+            return (res.records || []).map(r => ({
+                _id: r.id,
+                Name: r.fields['Name'] || '',
+                Count: r.fields['Count'] || 0
+            }));
+        }
+
+        // ─── Reset ALL stall counts to 0 (new day) ────────────────────────────────────
+        async function resetAllStalls(allStalls) {
+            const updates = allStalls.map(s => ({ id: s._id, fields: { 'Count': 0 } }));
+            // Airtable allows max 10 records per PATCH
+            for (let i = 0; i < updates.length; i += 10) {
+                const res = await atPatch(STALL_TBL, updates.slice(i, i + 10));
+                if (res.error) throw res.error;
+            }
+        }
+
+        // ─── Find today's history record (by Name = date string) ─────────────────────
+        async function findTodayHistoryRecord(dateStr) {
+            const res = await atGet(HIST_TBL, {
+                filterByFormula: `{Name} = '${dateStr}'`,
+                maxRecords: 1
+            });
+            if (res.error) throw res.error;
+            const rec = (res.records || [])[0];
+            if (!rec) return null;
+
+            let dataJson = {};
+            try { dataJson = JSON.parse(rec.fields['Data JSON'] || '{}'); } catch (e) { }
+            return { _id: rec.id, dataJson };
+        }
+
+        // ─── Build history JSON from all stalls ───────────────────────────────────────
+        function buildHistoryJson(allStalls, dateStr) {
+            let totalCount = 0;
+            allStalls.forEach(s => totalCount += s.Count);
+            return {
+                stalls: allStalls.map(s => ({ Name: s.Name, Count: s.Count })),
+                totals: {
+                    count_total: totalCount,
+                    stall_total: allStalls.length
+                },
+                name: dateStr  // the date string as the "name" field inside JSON
+            };
+        }
+
+        // ─── Write / update today's history record ────────────────────────────────────
+        async function syncHistoryRecord(dateStr) {
+            // 1. Get latest all-stall data
+            const allStalls = await fetchAllStalls();
+
+            // 2. Build the new Data JSON
+            const histJson = buildHistoryJson(allStalls, dateStr);
+
+            // 3. Check if today's record already exists
+            const existing = await findTodayHistoryRecord(dateStr);
+
+            if (existing) {
+                // UPDATE existing record — only update Data JSON, preserve Name
+                const res = await atPatch(HIST_TBL, [{
+                    id: existing._id,
+                    fields: { 'Data JSON': JSON.stringify(histJson) }
+                }]);
+                if (res.error) throw res.error;
+            } else {
+                // CREATE new record for today
+                const res = await atPost(HIST_TBL, [{
+                    fields: {
+                        'Name': dateStr,
+                        'Data JSON': JSON.stringify(histJson)
+                    }
+                }]);
+                if (res.error) throw res.error;
+            }
+        }
+
+        // ─── Page load: check date change & load stall ────────────────────────────────
+        async function loadStall() {
+            if (!stallRecordId) {
+                loadingDiv.textContent = 'No stall selected.';
+                return;
+            }
+
+            const today = todayStr();
+            const lastDate = localStorage.getItem('prasadam_last_date');
+
+            try {
+                // ── Date changed? Reset all stall counts ──────────────────────────────
+                if (lastDate && lastDate !== today) {
+                    setSyncStatus('syncing', '⏳ New day — resetting counts...');
+                    const allStalls = await fetchAllStalls();
+                    await resetAllStalls(allStalls);
+                    localStorage.setItem('prasadam_last_date', today);
+                    document.getElementById('resetBanner').style.display = 'block';
+                    // Hide banner after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('resetBanner').style.display = 'none';
+                    }, 5000);
+                } else {
+                    // First ever visit — just record today's date
+                    localStorage.setItem('prasadam_last_date', today);
+                }
+
+                // ── Load this stall's current data ────────────────────────────────────
+                const res = await atGet(STALL_TBL, {
+                    filterByFormula: `RECORD_ID() = '${stallRecordId}'`
+                });
+                if (res.error) throw res.error;
+
+                const rec = (res.records || [])[0];
+                if (!rec) { loadingDiv.textContent = 'Stall not found.'; return; }
+
+                stallNameEl.textContent = rec.fields['Name'] || 'Counter';
+                const history = await getTodayHistory();
+
+                if (history) {
+                    const match = history.stalls.find(s => s.Name === rec.fields['Name']);
+                    uiCount = match ? match.Count : 0;
+                } else {
+                    uiCount = 0;
+                }
+
+                uiCountEl.textContent = uiCount;
+                uiCountEl.textContent = uiCount;
+
+                loadingDiv.style.display = 'none';
+                counterDiv.style.display = 'flex';
+                setSyncStatus('', '');
+
+            } catch (e) {
+                console.error(e);
+                loadingDiv.textContent = 'Error loading stall.';
+                toastr.error('Unable to get details. Check your connection.');
+            }
+        }
+
+        // ─── +/− Buttons ──────────────────────────────────────────────────────────────
+        function addCount() { uiCount++; uiCountEl.textContent = uiCount; scheduleUpdate(); }
+        function minusCount() { if (uiCount > 0) uiCount--; uiCountEl.textContent = uiCount; scheduleUpdate(); }
+
+        // ─── Debounced sync (500ms) ───────────────────────────────────────────────────
+        let debounceTimer = null, lastSendTime = 0;
+        function scheduleUpdate() {
+            setSyncStatus('syncing', '⏳ Saving...');
+            window.onbeforeunload = () => 'Changes may not be saved yet.';
+            if (debounceTimer) clearTimeout(debounceTimer);
+            const now = Date.now();
+            if (now - lastSendTime > 500) {
+                lastSendTime = now;
+                doUpdate();
+            } else {
+                debounceTimer = setTimeout(() => { lastSendTime = Date.now(); doUpdate(); }, 500);
+            }
+        }
+
+        // ─── The actual sync: stall table THEN history table ─────────────────────────
+        async function doUpdate() {
+            if (!stallRecordId) return;
+            const today = todayStr();
+
+            try {
+                // STEP 1: Update this stall's count in STALL_TBL
+                const stallRes = await atPatch(STALL_TBL, [{
+                    id: stallRecordId,
+                    fields: { 'Count': uiCount }
+                }]);
+                if (stallRes.error) throw stallRes.error;
+
+                // STEP 2: Update (or create) today's history record with ALL stall data
+                await syncHistoryRecord(today);
+
+                setSyncStatus('synced', '✅ Saved');
+                window.onbeforeunload = null;
+
+            } catch (e) {
+                console.error(e);
+                setSyncStatus('error', '❌ Sync failed');
+                toastr.error('Unable to update count. Check your internet connection.');
+            }
+        }
+        async function getTodayHistory() {
+            const today = todayStr();
+
+            const res = await atGet(HIST_TBL, {
+                filterByFormula: `{Name} = '${today}'`,
+                maxRecords: 1
+            });
+
+            if (res.records && res.records.length) {
+                return JSON.parse(res.records[0].fields['Data JSON'] || '{}');
+            }
+            return null;
+        }
+
+        function setSyncStatus(cls, msg) {
+            syncEl.className = 'sync-status ' + (cls || '');
+            syncEl.textContent = msg;
+            if (cls === 'synced') {
+                setTimeout(() => {
+                    syncEl.textContent = '';
+                    syncEl.className = 'sync-status';
+                }, 2500);
+            }
+        }
+
+        // ─── Init ─────────────────────────────────────────────────────────────────────
+        loadStall();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATD Gachibowli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+            padding-bottom: 50px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            color: teal;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .meta-title {
+            font-size: 25px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            min-height: 32px;
+            padding: 0 10px;
+        }
+
+        .stall-container {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stall-card {
+            width: 40vw;
+            max-width: 150px;
+            min-height: 150px;
+            max-height: 150px;
+            height: 40vw;
+            text-align: center;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            margin: 5px;
+            border-radius: 5px;
+            background-color: wheat;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .stall-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stall-card:nth-child(7n) {
+            background-color: wheat;
+        }
+
+        .stall-card:nth-child(7n+1) {
+            background-color: aliceblue;
+        }
+
+        .stall-card:nth-child(7n+2) {
+            background-color: cadetblue;
+        }
+
+        .stall-card:nth-child(7n+3) {
+            background-color: yellowgreen;
+        }
+
+        .stall-card:nth-child(7n+4) {
+            background-color: violet;
+        }
+
+        .stall-card:nth-child(7n+5) {
+            background-color: tomato;
+        }
+
+        .stall-card:nth-child(7n+6) {
+            background-color: thistle;
+        }
+
+        .stall-card.total-card {
+            background-color: #FFFDD0 !important;
+            cursor: default;
+        }
+
+        .stall-card.total-card:hover,
+        .stall-card.no-edit:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .stall-card.no-edit {
+            cursor: default;
+        }
+
+        .stall-title {
+            font-size: 19px;
+            font-weight: bold;
+            color: #111;
+        }
+
+        .stall-count {
+            font-size: 30px;
+            color: teal;
+            font-weight: bold;
+        }
+
+        .special-button {
+            display: inline-block;
+            padding: 9px 18px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            background-color: #4a90e2;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .special-button:hover {
+            opacity: 0.88;
+        }
+
+        .special-button.success {
+            background-color: #4CAF50;
+        }
+
+        .special-button.danger {
+            background-color: #e53935;
+        }
+
+        .special-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .special-input {
+            padding: 9px 14px;
+            border: 1.5px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .special-input:focus {
+            border-color: teal;
+        }
+
+        #locked-div {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: #666;
+            margin-top: 30px;
+        }
+
+        .date-text {
+            text-align: center;
+            font-size: 16px;
+            margin-top: 5px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-title">ATD Gachibowli</div>
+    <div class="meta-title" id="metaTitle"></div>
+    <div id="todayDate" class="date-text"></div>
+
+    <div class="stall-container">
+        <div class="stall-card total-card">
+            <div class="stall-title">Counters</div>
+            <div class="stall-count" id="stallTotal">0</div>
+        </div>
+        <div class="stall-card total-card">
+            <div class="stall-title">Total Count</div>
+            <div class="stall-count" id="countTotal">0</div>
+        </div>
+    </div>
+
+    <div class="stall-container" id="stallCards">
+        <div class="loading-text">Loading...</div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button class="special-button success" onclick="copySummary()">✂️ Summary</button>
+        <button class="special-button success" onclick="whatsappSummary()">📤 Whatsapp</button>
+    </div>
+
+    <div style="margin-top: 20px;" id="passwordDiv">
+        <input type="password" class="special-input" id="passwordInput" placeholder="Secret Phrase"
+            oninput="checkPassword()" />
+    </div>
+
+    <div id="locked-div">
+        <div>
+            <button class="special-button" onclick="window.location.href='admin.html'">⚙️ Settings</button>
+            <button class="special-button" onclick="window.location.href='history.html'">📜 History</button>
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
+            <input class="special-input" type="text" id="nameForSave" placeholder="Enter title" /><br />
+            <button class="special-button danger" style="margin-top: 8px;" onclick="saveAndReset()" id="saveBtn">💾 Save
+                &amp; Reset</button>
+        </div>
+    </div>
+
+    <!-- ⚠️ config.js is gitignored — contains your API credentials -->
+    <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        const API_KEY = AIRTABLE_CONFIG.API_KEY;
+        const BASE = AIRTABLE_CONFIG.BASE;
+        const STALL_TBL = AIRTABLE_CONFIG.STALL_TBL;
+        const META_TBL = AIRTABLE_CONFIG.META_TBL;
+        const HIST_TBL = AIRTABLE_CONFIG.HIST_TBL;
+        const AUTH_HDR = { 'Authorization': `Bearer ${API_KEY}` };
+        const JSON_HDRS = { ...AUTH_HDR, 'Content-Type': 'application/json' };
+
+        let stalls = [], totals = {}, isEditAllowed = false;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        try { const p = JSON.parse(atob(urlParams.get('params') || '')); if (p && p.edit) isEditAllowed = true; } catch (e) { }
+
+        async function atGet(table, params = {}) {
+            const url = new URL(`https://api.airtable.com/v0/${BASE}/${table}`);
+            Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+            return (await fetch(url.toString(), { headers: AUTH_HDR })).json();
+        }
+        async function atPost(table, records) {
+            return (await fetch(`https://api.airtable.com/v0/${BASE}/${table}`, {
+                method: 'POST', headers: JSON_HDRS, body: JSON.stringify({ records })
+            })).json();
+        }
+        async function atPatch(table, records) {
+            return (await fetch(`https://api.airtable.com/v0/${BASE}/${table}`, {
+                method: 'PATCH', headers: JSON_HDRS, body: JSON.stringify({ records })
+            })).json();
+        }
+        function setTodayDate() {
+            const today = new Date();
+
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+
+            const formattedDate = today.toLocaleDateString('en-IN', options);
+
+            document.getElementById('todayDate').innerText = formattedDate;
+        }
+
+        // Call function when page loads
+        window.onload = function () {
+            setTodayDate();
+        };
+
+        async function refreshData() {
+            try {
+                // 1. Get stall names
+                const stallRes = await atGet(STALL_TBL);
+                stalls = (stallRes.records || []).map(r => ({
+                    Name: r.fields['Name'],
+                    _id: r.id
+                }));
+
+                // 2. Get today's history
+                const history = await getTodayHistory();
+
+                if (history) {
+                    // map counts from history JSON
+                    stalls = stalls.map(stall => {
+                        const match = history.stalls.find(s => s.Name === stall.Name);
+                        return {
+                            ...stall,
+                            Count: match ? match.Count : 0
+                        };
+                    });
+
+                    totals = history.totals;
+                } else {
+                    // fallback
+                    stalls = stalls.map(s => ({ ...s, Count: 0 }));
+                    totals = { count_total: 0, stall_total: stalls.length };
+                }
+
+                renderStalls();
+
+            } catch (e) {
+                console.error(e);
+                toastr.error('Error loading data');
+            }
+        }
+
+        function renderStalls() {
+            document.getElementById('stallTotal').textContent = totals.stall_total || 0;
+            document.getElementById('countTotal').textContent = totals.count_total || 0;
+            const c = document.getElementById('stallCards'); c.innerHTML = '';
+            if (!stalls.length) { c.innerHTML = '<div class="loading-text">No counters found.</div>'; return; }
+            stalls.forEach(stall => {
+                const card = document.createElement('div');
+                card.className = 'stall-card' + (isEditAllowed ? '' : ' no-edit');
+                card.innerHTML = `<div class="stall-title">${esc(stall['Name'] || '')}</div>
+                              <div class="stall-count">${stall['Count'] || 0}</div>`;
+                if (isEditAllowed) card.onclick = () => location.href = `stall.html?stall_record_id=${stall._id}`;
+                c.appendChild(card);
+            });
+        }
+
+        function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+        function generateSummary() {
+            return `Hare Krishna\nSummary Generated at ${new Date().toLocaleString('en-IN')}\n\n` +
+                `Counters: ${totals.stall_total}\nTotal Count: ${totals.count_total}\n\n` +
+                stalls.map(e => `${e['Name']} - ${e['Count'] || 0}`).join('\n');
+        }
+        function copySummary() { navigator.clipboard.writeText(generateSummary()); toastr.success('Summary copied!'); }
+        function whatsappSummary() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateSummary())}`); }
+
+        function checkPassword() {
+            if (document.getElementById('passwordInput').value === 'haribol') {
+                toastr.success('Unlocked');
+                document.getElementById('passwordDiv').style.display = 'none';
+                const ld = document.getElementById('locked-div');
+                ld.style.display = 'flex';
+                setTimeout(() => ld.scrollIntoView({ behavior: 'smooth' }), 100);
+            }
+        }
+        async function getTodayHistory() {
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            const todayStr = `${dd}-${mm}-${yyyy}`;
+
+            const res = await atGet(HIST_TBL, {
+                filterByFormula: `{Name} = '${todayStr}'`,
+                maxRecords: 1
+            });
+
+            if (res.records && res.records.length) {
+                return JSON.parse(res.records[0].fields['Data JSON'] || '{}');
+            }
+            return null;
+        }
+        async function saveAndReset() {
+            const name = document.getElementById('nameForSave').value.trim();
+            if (!name) { toastr.warning('Please enter a title first.'); return; }
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true; btn.textContent = '⏳ Saving...';
+            try {
+                const payload = { name, totals, stalls: stalls.map(s => ({ 'Name': s['Name'], 'Count': s['Count'] || 0, 'Record ID': s._id })) };
+                const h = await atPost(HIST_TBL, [{ fields: { 'Name': name, 'Data JSON': JSON.stringify(payload) } }]);
+                if (h.error) throw h.error;
+                const updates = stalls.map(s => ({ id: s._id, fields: { 'Count': 0 } }));
+                for (let i = 0; i < updates.length; i += 10) {
+                    const r = await atPatch(STALL_TBL, updates.slice(i, i + 10));
+                    if (r.error) throw r.error;
+                }
+                document.getElementById('nameForSave').value = '';
+                toastr.success('Data saved successfully'); refreshData();
+            } catch (e) { toastr.error('Unable to save. Please check your connection.'); }
+            finally { btn.disabled = false; btn.textContent = '💾 Save & Reset'; }
+        }
+
+        refreshData();
+        setInterval(() => { if (document.visibilityState === 'visible') refreshData(); }, 3500);
+    </script>
+</body>
+
+</html>
