@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Prasadam Counter</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -12,6 +12,16 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        .plus-button,
+        .minus-button {
+            touch-action: manipulation;
+        }
+
+        html,
+        body {
+            touch-action: manipulation;
         }
 
         body {
