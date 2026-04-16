@@ -8,20 +8,67 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>ATD Gachibowli – History Detail</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <style>
-        * {
+        :root {
+            /* PRIMARY COLORS (Professional Upgrade) */
+            --maroon: #5B1A18;
+            --maroon-deep: #3A0F0D;
+            --maroon-light: #7A2A26;
+
+            --saffron: #E67E22;
+            --saffron-glow: #F39C12;
+
+            --gold: #BFA14A;
+            --gold-bright: #D4AF37;
+            --gold-pale: #F6E7B0;
+
+            /* BACKGROUND */
+            --cream: #F9F7F2;
+            --cream-2: #F4EFE6;
+            --warm-white: #FFFFFF;
+
+            /* TEXT */
+            --text-primary: #1C1C1C;
+            --text-secondary: #4A3A2A;
+            --text-muted: #8A7A6A;
+
+            /* BORDER & SHADOW */
+            --border-warm: #E0D3B8;
+            --shadow-warm: rgba(0, 0, 0, 0.08);
+            --shadow-gold: rgba(191, 161, 74, 0.25);
+        }
+
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #f5f5f5;
+            font-family: 'Nunito', sans-serif;
+            background: var(--cream);
+            color: var(--text-primary);
             text-align: center;
             padding-bottom: 60px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle at 20% 20%, rgba(196, 154, 34, .06) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(123, 27, 27, .06) 0%, transparent 50%);
         }
 
         /* ── Top bar ── */
@@ -31,38 +78,53 @@
             justify-content: center;
             position: relative;
             padding: 18px 50px 4px;
+            z-index: 1;
         }
 
         .back-btn {
             position: absolute;
             left: 14px;
-            font-size: 22px;
-            background: none;
-            border: none;
-            color: teal;
+            font-size: 20px;
+            background: var(--warm-white);
+            border: 1.5px solid var(--border-warm);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
             cursor: pointer;
             line-height: 1;
+            transition: all .22s;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            border-color: var(--saffron);
+            color: var(--saffron);
+            background: #FFF5EC;
         }
 
         .page-title {
-            font-size: 22px;
-            color: teal;
-            font-weight: 600;
+            font-size: 20px;
+            color: var(--maroon-deep);
+            font-weight: 800;
         }
 
         /* ── Session header ── */
         .session-name {
             font-size: 28px;
-            font-weight: 700;
-            color: #111;
+            font-weight: 800;
+            color: var(--maroon);
             margin-top: 10px;
             padding: 0 12px;
+            position: relative;
+            z-index: 1;
         }
 
         .session-date {
             font-size: 14px;
-            color: #777;
+            color: var(--text-muted);
             margin-top: 4px;
+            position: relative;
+            z-index: 1;
         }
 
         /* ── Cards grid ── */
@@ -72,6 +134,8 @@
             justify-content: center;
             margin-top: 18px;
             padding: 0 8px;
+            position: relative;
+            z-index: 1;
         }
 
         .card {
@@ -85,93 +149,102 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin: 6px;
-            border-radius: 8px;
-            background: wheat;
+            margin: 8px;
+            border-radius: 12px;
+            background: var(--cream-2);
+            border: 1.5px solid var(--border-warm);
+            transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+            box-shadow: 0 4px 12px var(--shadow-warm);
         }
 
-        /* Rotating colour palette */
-        .card:nth-child(7n+1) {
-            background-color: aliceblue;
-        }
-
-        .card:nth-child(7n+2) {
-            background-color: cadetblue;
-        }
-
-        .card:nth-child(7n+3) {
-            background-color: yellowgreen;
-        }
-
-        .card:nth-child(7n+4) {
-            background-color: violet;
-        }
-
-        .card:nth-child(7n+5) {
-            background-color: tomato;
-        }
-
-        .card:nth-child(7n+6) {
-            background-color: thistle;
-        }
-
-        .card:nth-child(7n) {
-            background-color: wheat;
+        .card:hover {
+            border-color: var(--saffron);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(212, 98, 10, .18);
         }
 
         .card.total {
-            background-color: #FFFDD0 !important;
+            background: linear-gradient(135deg, #FFF9EC, #FFF2D8);
+            border-color: var(--gold);
+        }
+
+        .card.total:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--gold);
         }
 
         .card-label {
-            font-size: 17px;
-            font-weight: 700;
-            color: #111;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: .4px;
         }
 
         .card-value {
             font-size: 32px;
-            font-weight: 700;
-            color: teal;
+            font-weight: 800;
+            color: var(--maroon);
         }
 
         /* ── Buttons ── */
         .btn-row {
             margin-top: 24px;
+            position: relative;
+            z-index: 1;
         }
 
         .btn {
-            display: inline-block;
-            padding: 10px 22px;
-            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 24px;
+            margin: 6px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            background: #4CAF50;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            letter-spacing: .4px;
+            background: linear-gradient(135deg, var(--saffron) 0%, var(--maroon) 100%);
             color: white;
             cursor: pointer;
-            transition: opacity 0.2s;
+            box-shadow: 0 6px 24px rgba(212, 98, 10, .4);
+            transition: all .25s cubic-bezier(.34, 1.56, .64, 1);
         }
 
         .btn:hover {
-            opacity: 0.85;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 32px rgba(212, 98, 10, .52);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
         /* ── States ── */
         .loading-wrap {
             margin-top: 80px;
             font-size: 16px;
-            color: #777;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 1;
         }
 
         .spinner {
             display: inline-block;
             width: 36px;
             height: 36px;
-            border: 4px solid #ddd;
-            border-top-color: teal;
+            border: 4px solid var(--border-warm);
+            border-top-color: var(--saffron);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin-bottom: 12px;
@@ -184,27 +257,46 @@
         }
 
         .no-data {
-            color: #999;
+            color: var(--text-muted);
             font-size: 15px;
             margin-top: 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .error-box {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #FFF5EC, #FFE8D0);
+            border: 1.5px solid var(--saffron);
+            border-radius: 10px;
             padding: 12px 16px;
             margin: 16px auto;
             max-width: 480px;
             font-size: 13px;
-            color: #856404;
+            color: var(--maroon);
             text-align: left;
             word-break: break-all;
             display: none;
+            position: relative;
+            z-index: 1;
         }
 
         #mainContent {
             display: none;
+        }
+        .spin {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid var(--border-warm);
+            border-top-color: var(--saffron);
+            border-radius: 50%;
+            animation: sp .7s linear infinite;
+        }
+
+        @keyframes sp {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
